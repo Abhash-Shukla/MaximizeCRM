@@ -1,0 +1,95 @@
+.dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  margin: 0;
+  padding: 20px 24px 10px;
+}
+
+.dialog-content {
+  padding: 10px 24px 20px;
+  min-width: 320px;
+  max-width: 580px;
+}
+
+.campaign-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  &.three-col {
+    mat-form-field {
+      flex: 1;
+    }
+  }
+}
+
+.half-width {
+  flex: 1;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 0;
+  color: #64748b;
+}
+
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  margin-bottom: 12px;
+
+  &.alert-error {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+  }
+}
+
+.option-role {
+  margin-left: 6px;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.dialog-actions {
+  padding: 12px 24px 20px;
+  gap: 8px;
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.btn-spinner-text {
+  margin-left: 6px;
+}
+

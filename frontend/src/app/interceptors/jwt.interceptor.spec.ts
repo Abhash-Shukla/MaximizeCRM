@@ -51,6 +51,17 @@ describe('jwtInterceptor', () => {
     req.flush([]);
   });
 
+  it('should attach Authorization Bearer token to /api/campaigns request when token is present', () => {
+    sessionStorage.setItem('auth_token', 'valid-test-token-campaigns');
+
+    http.get('/api/campaigns').subscribe();
+
+    const req = httpMock.expectOne('/api/campaigns');
+    expect(req.request.headers.has('Authorization')).toBe(true);
+    expect(req.request.headers.get('Authorization')).toBe('Bearer valid-test-token-campaigns');
+    req.flush([]);
+  });
+
   it('should attach Authorization Bearer token to /api/contacts request when token is present', () => {
     sessionStorage.setItem('auth_token', 'valid-test-token-contacts');
 

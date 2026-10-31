@@ -1,0 +1,148 @@
+<h2 mat-dialog-title class="dialog-title">
+  <mat-icon color="primary">{{ isCreateMode ? 'campaign' : 'edit' }}</mat-icon>
+  <span>{{ title }}</span>
+</h2>
+
+<mat-dialog-content class="dialog-content">
+  @if (errorMessage(); as err) {
+    <div class="alert alert-error">
+      <mat-icon>error</mat-icon>
+      <span>{{ err }}</span>
+    </div>
+  }
+
+  @if (loadingUsers()) {
+    <div class="loading-state">
+      <mat-spinner diameter="30"></mat-spinner>
+      <span>Loading users...</span>
+    </div>
+  } @else {
+    <form [formGroup]="form" class="campaign-form" (ngSubmit)="onSubmit()">
+      <!-- Campaign Name -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Campaign Name *</mat-label>
+        <input matInput formControlName="name" placeholder="e.g. Q4 Enterprise Lead Gen Webinar" maxlength="150" required />
+        <mat-icon matPrefix>label</mat-icon>
+        @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
+          <mat-error>Campaign name is required.</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Type and Status Row -->
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Channel / Type *</mat-label>
+          <mat-select formControlName="type" required>
+            @for (t of types; track t) {
+              <mat-option [value]="t">{{ t }}</mat-option>
+            }
+          </mat-select>
+          <mat-icon matPrefix>hub</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Campaign Status *</mat-label>
+          <mat-select formControlName="status" required>
+            @for (s of statuses; track s) {
+              <mat-option [value]="s">{{ s }}</mat-option>
+            }
+          </mat-select>
+          <mat-icon matPrefix>flag</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <!-- Start Date and End Date Row -->
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Start Date</mat-label>
+          <input matInput type="date" formControlName="startDate" />
+          <mat-icon matPrefix>calendar_today</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>End Date</mat-label>
+          <input matInput type="date" formControlName="endDate" />
+          <mat-icon matPrefix>event</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <!-- Financials Row (Budget, Expected Revenue, Actual Cost) -->
+      <div class="form-row three-col">
+        <mat-form-field appearance="outline">
+          <mat-label>Budget ($)</mat-label>
+          <input matInput type="number" formControlName="budget" min="0" step="0.01" />
+          <mat-icon matPrefix>attach_money</mat-icon>
+          @if (form.get('budget')?.hasError('min') && form.get('budget')?.touched) {
+            <mat-error>Must be &ge; 0</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Expected Revenue ($)</mat-label>
+          <input matInput type="number" formControlName="expectedRevenue" min="0" step="0.01" />
+          <mat-icon matPrefix>trending_up</mat-icon>
+          @if (form.get('expectedRevenue')?.hasError('min') && form.get('expectedRevenue')?.touched) {
+            <mat-error>Must be &ge; 0</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Actual Cost ($)</mat-label>
+          <input matInput type="number" formControlName="actualCost" min="0" step="0.01" />
+          <mat-icon matPrefix>receipt</mat-icon>
+          @if (form.get('actualCost')?.hasError('min') && form.get('actualCost')?.touched) {
+            <mat-error>Must be &ge; 0</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <!-- Assigned User Selection -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Campaign Manager / Assigned Rep *</mat-label>
+        <mat-select formControlName="assignedUserId" placeholder="Assign user" required>
+          @for (user of users(); track user.id) {
+            <mat-option [value]="user.id">
+              {{ user.fullName }}
+              <span class="option-role">[{{ user.role }}]</span>
+            </mat-option>
+          }
+        </mat-select>
+        <mat-icon matPrefix>assignment_ind</mat-icon>
+        @if (form.get('assignedUserId')?.hasError('required') && form.get('assignedUserId')?.touched) {
+          <mat-error>Assigned user is required.</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Description / Objective -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description & Objectives (Optional)</mat-label>
+        <textarea
+          matInput
+          formControlName="description"
+          rows="3"
+          placeholder="Campaign goals, target audience, messaging, delivery channels..."
+        ></textarea>
+        <mat-icon matPrefix>notes</mat-icon>
+      </mat-form-field>
+    </form>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-button type="button" (click)="onCancel()" [disabled]="isSaving()">Cancel</button>
+  <button
+    mat-raised-button
+    color="primary"
+    type="button"
+    (click)="onSubmit()"
+    [disabled]="form.invalid || isSaving()"
+  >
+    @if (isSaving()) {
+      <mat-spinner diameter="18"></mat-spinner>
+      <span class="btn-spinner-text">Saving...</span>
+    } @else {
+      {{ submitButtonLabel }}
+    }
+  </button>
+</mat-dialog-actions>
+
