@@ -1,0 +1,118 @@
+<h2 mat-dialog-title class="dialog-title">
+  <mat-icon color="primary">{{ isCreateMode ? 'add_alert' : 'edit_notifications' }}</mat-icon>
+  <span>{{ title }}</span>
+</h2>
+
+<mat-dialog-content class="dialog-content">
+  @if (errorMessage(); as err) {
+    <div class="alert alert-error">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ err }}</span>
+    </div>
+  }
+
+  <form [formGroup]="form" class="reminder-form">
+    <!-- Title -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Reminder Title / Task</mat-label>
+      <input
+        matInput
+        formControlName="title"
+        placeholder="e.g. Follow-up demo call with client"
+      />
+      <mat-icon matPrefix>title</mat-icon>
+      @if (form.get('title')?.hasError('required') && form.get('title')?.touched) {
+        <mat-error>Title is required</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Due Date & Time -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Due Date & Time</mat-label>
+      <input
+        matInput
+        type="datetime-local"
+        formControlName="dueDate"
+      />
+      <mat-icon matPrefix>event</mat-icon>
+      <mat-hint>Date & time for follow-up reminder</mat-hint>
+    </mat-form-field>
+
+    <!-- Row: Assigned User & Status -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Assigned User / Rep</mat-label>
+        <mat-select formControlName="assignedUserId">
+          @for (user of users(); track user.id) {
+            <mat-option [value]="user.id">
+              {{ user.fullName }} ({{ user.role }})
+            </mat-option>
+          }
+        </mat-select>
+        <mat-icon matPrefix>person</mat-icon>
+        @if (form.get('assignedUserId')?.hasError('required') && form.get('assignedUserId')?.touched) {
+          <mat-error>Assigned user is required</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          @for (st of statuses; track st) {
+            <mat-option [value]="st">{{ st }}</mat-option>
+          }
+        </mat-select>
+        <mat-icon matPrefix>flag</mat-icon>
+      </mat-form-field>
+    </div>
+
+    <!-- Related Lead (Optional) -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Related Lead (Optional)</mat-label>
+      <mat-select formControlName="leadId">
+        <mat-option [value]="null">— None (General Reminder) —</mat-option>
+        @for (lead of leads(); track lead.id) {
+          <mat-option [value]="lead.id">
+            Lead #{{ lead.id }}: {{ lead.contactName }} ({{ lead.source }} - {{ lead.status }})
+          </mat-option>
+        }
+      </mat-select>
+      <mat-icon matPrefix>link</mat-icon>
+      <mat-hint>Link reminder to a sales prospect or leave unlinked</mat-hint>
+    </mat-form-field>
+
+    <!-- Notes -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Notes / Context (Optional)</mat-label>
+      <textarea
+        matInput
+        formControlName="notes"
+        rows="3"
+        placeholder="Add details, discussion points, or special instructions..."
+      ></textarea>
+      <mat-icon matPrefix>notes</mat-icon>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-button type="button" (click)="onCancel()" [disabled]="isSaving()">
+    Cancel
+  </button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="onSubmit()"
+    [disabled]="form.invalid || isSaving() || loadingOptions()"
+  >
+    @if (isSaving()) {
+      <mat-spinner diameter="18" class="btn-spinner"></mat-spinner>
+      <span>Saving...</span>
+    } @else {
+      <ng-container>
+        <mat-icon>{{ isCreateMode ? 'add' : 'check' }}</mat-icon>
+        <span>{{ isCreateMode ? 'Create Reminder' : 'Save Changes' }}</span>
+      </ng-container>
+    }
+  </button>
+</mat-dialog-actions>

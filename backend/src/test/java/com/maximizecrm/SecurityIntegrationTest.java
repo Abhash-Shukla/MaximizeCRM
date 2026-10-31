@@ -101,4 +101,22 @@ class SecurityIntegrationTest {
                 .header("Authorization", "Bearer " + token))
             .andExpect(status().isOk());
     }
+
+    @Test
+    @DisplayName("GET /api/reminders without token should return 401")
+    void getReminders_WithoutToken_Returns401() throws Exception {
+        mockMvc.perform(get("/api/reminders"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("GET /api/reminders with token should return 200")
+    void getReminders_WithToken_Returns200() throws Exception {
+        User admin = userRepository.findByEmailIgnoreCase("admin@maximizecrm.local").orElseThrow();
+        String token = jwtService.generateToken(admin);
+
+        mockMvc.perform(get("/api/reminders")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk());
+    }
 }

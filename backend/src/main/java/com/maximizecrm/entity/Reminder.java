@@ -35,6 +35,9 @@ public class Reminder {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column
+    private LocalDateTime updatedAt;
+
     public Reminder() {
     }
 
@@ -55,6 +58,11 @@ public class Reminder {
         if (this.status == null) {
             this.status = ReminderStatus.PENDING;
         }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -119,6 +127,14 @@ public class Reminder {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
 

@@ -32,5 +32,10 @@ export const routes: Routes = [
     loadComponent: () => import('./components/campaigns/campaigns.component').then(m => m.CampaignsComponent),
     canActivate: [authGuard]
   },
+  {
+    path: 'reminders',
+    loadComponent: () => import('./components/reminders/reminders.component').then(m => m.RemindersComponent),
+    canActivate: [authGuard]
+  },
   { path: '**', redirectTo: 'login' }
 ];
