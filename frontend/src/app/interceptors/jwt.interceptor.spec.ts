@@ -84,6 +84,17 @@ describe('jwtInterceptor', () => {
     req.flush({});
   });
 
+  it('should attach Authorization Bearer token to /api/admin/users request when token is present', () => {
+    sessionStorage.setItem('auth_token', 'valid-test-token-admin-users');
+
+    http.get('/api/admin/users').subscribe();
+
+    const req = httpMock.expectOne('/api/admin/users');
+    expect(req.request.headers.has('Authorization')).toBe(true);
+    expect(req.request.headers.get('Authorization')).toBe('Bearer valid-test-token-admin-users');
+    req.flush([]);
+  });
+
   it('should attach Authorization Bearer token to /api/contacts request when token is present', () => {
     sessionStorage.setItem('auth_token', 'valid-test-token-contacts');
 

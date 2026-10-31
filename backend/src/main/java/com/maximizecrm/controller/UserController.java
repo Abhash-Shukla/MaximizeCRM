@@ -1,11 +1,14 @@
 package com.maximizecrm.controller;
 
+import com.maximizecrm.dto.CreateUserRequest;
+import com.maximizecrm.dto.UpdateUserRequest;
+import com.maximizecrm.dto.UserResponse;
 import com.maximizecrm.dto.UserSummaryResponse;
-import com.maximizecrm.repository.UserRepository;
+import com.maximizecrm.service.UserService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -13,19 +16,48 @@ import java.util.List;
 @RequestMapping("/api/users")
 public class UserController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
-    public UserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @GetMapping
     public ResponseEntity<List<UserSummaryResponse>> getAssignableUsers() {
-        List<UserSummaryResponse> users = userRepository.findAll().stream()
-            .filter(u -> u.isActive())
-            .map(UserSummaryResponse::fromEntity)
-            .toList();
+        List<UserSummaryResponse> users = userService.getAssignableUsers();
         return ResponseEntity.ok(users);
     }
-}
 
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+        UserResponse user = userService.getUserById(id);
+        return ResponseEntity.ok(user);
+    }
+
+    @PostMapping
+    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
+        UserResponse created = userService.createUser(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponse> updateUser(
+        @PathVariable Long id,
+        @Valid @RequestBody UpdateUserRequest request
+    ) {
+        UserResponse updated = userService.updateUser(id, request);
+        return ResponseEntity.ok(updated);
+    }
+
+    @PatchMapping("/{id}/activate")
+    public ResponseEntity<UserResponse> activateUser(@PathVariable Long id) {
+        UserResponse updated = userService.setUserActive(id, true);
+        return ResponseEntity.ok(updated);
+    }
+
+    @PatchMapping("/{id}/deactivate")
+    public ResponseEntity<UserResponse> deactivateUser(@PathVariable Long id) {
+        UserResponse updated = userService.setUserActive(id, false);
+        return ResponseEntity.ok(updated);
+    }
+}

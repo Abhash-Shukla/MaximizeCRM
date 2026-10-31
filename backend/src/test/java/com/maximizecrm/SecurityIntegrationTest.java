@@ -8,9 +8,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -134,6 +136,59 @@ class SecurityIntegrationTest {
         String token = jwtService.generateToken(admin);
 
         mockMvc.perform(get("/api/reports/summary")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("GET /api/admin/users without token should return 401")
+    void getAdminUsers_WithoutToken_Returns401() throws Exception {
+        mockMvc.perform(get("/api/admin/users"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("GET /api/admin/users with SALES_REP token should return 403 Forbidden (FR-8.6 / AT-11)")
+    void getAdminUsers_WithSalesRepToken_Returns403() throws Exception {
+        User rep = userRepository.findByEmailIgnoreCase("rep@maximizecrm.local").orElseThrow();
+        String token = jwtService.generateToken(rep);
+
+        mockMvc.perform(get("/api/admin/users")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("GET /api/admin/users with ADMIN token should return 200 OK")
+    void getAdminUsers_WithAdminToken_Returns200() throws Exception {
+        User admin = userRepository.findByEmailIgnoreCase("admin@maximizecrm.local").orElseThrow();
+        String token = jwtService.generateToken(admin);
+
+        mockMvc.perform(get("/api/admin/users")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("POST /api/users with SALES_REP token should return 403 Forbidden")
+    void createUser_WithSalesRepToken_Returns403() throws Exception {
+        User rep = userRepository.findByEmailIgnoreCase("rep@maximizecrm.local").orElseThrow();
+        String token = jwtService.generateToken(rep);
+
+        mockMvc.perform(post("/api/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"fullName\":\"Test\",\"email\":\"test@demo.com\",\"password\":\"Pass@123\",\"role\":\"SALES_REP\"}")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("GET /api/users (assignable) with SALES_REP token should return 200 OK")
+    void getAssignableUsers_WithSalesRepToken_Returns200() throws Exception {
+        User rep = userRepository.findByEmailIgnoreCase("rep@maximizecrm.local").orElseThrow();
+        String token = jwtService.generateToken(rep);
+
+        mockMvc.perform(get("/api/users")
                 .header("Authorization", "Bearer " + token))
             .andExpect(status().isOk());
     }

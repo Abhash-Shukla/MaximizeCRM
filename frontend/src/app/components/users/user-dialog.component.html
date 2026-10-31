@@ -1,0 +1,120 @@
+<h2 mat-dialog-title class="dialog-title">
+  <mat-icon color="primary">{{ isCreateMode ? 'person_add' : 'manage_accounts' }}</mat-icon>
+  <span>{{ title }}</span>
+</h2>
+
+<mat-dialog-content class="dialog-content">
+  @if (errorMessage(); as err) {
+    <div class="alert alert-error">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ err }}</span>
+    </div>
+  }
+
+  <form [formGroup]="form" class="user-form">
+    <!-- Full Name -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Full Name</mat-label>
+      <input
+        matInput
+        formControlName="fullName"
+        placeholder="e.g. John Doe"
+      />
+      <mat-icon matPrefix>badge</mat-icon>
+      @if (form.get('fullName')?.hasError('required') && form.get('fullName')?.touched) {
+        <mat-error>Full name is required</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Email -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Email Address</mat-label>
+      <input
+        matInput
+        type="email"
+        formControlName="email"
+        placeholder="user@maximizecrm.local"
+      />
+      <mat-icon matPrefix>email</mat-icon>
+      @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
+        <mat-error>Email is required</mat-error>
+      }
+      @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
+        <mat-error>Please enter a valid email address</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Password -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ isCreateMode ? 'Password' : 'New Password (Optional)' }}</mat-label>
+      <input
+        matInput
+        [type]="hidePassword() ? 'password' : 'text'"
+        formControlName="password"
+        [placeholder]="isCreateMode ? 'Minimum 6 characters' : 'Leave empty to preserve existing password'"
+      />
+      <mat-icon matPrefix>lock</mat-icon>
+      <button
+        mat-icon-button
+        matSuffix
+        type="button"
+        (click)="hidePassword.set(!hidePassword())"
+        [attr.aria-label]="hidePassword() ? 'Show password' : 'Hide password'"
+      >
+        <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+      </button>
+      @if (form.get('password')?.hasError('required') && form.get('password')?.touched) {
+        <mat-error>Password is required</mat-error>
+      }
+      @if (form.get('password')?.hasError('minlength') && form.get('password')?.touched) {
+        <mat-error>Password must be at least 6 characters</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Role Selection -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>System Role</mat-label>
+      <mat-select formControlName="role">
+        @for (r of roles; track r) {
+          <mat-option [value]="r">
+            {{ r === 'ADMIN' ? 'ADMIN (Full System Access)' : 'SALES_REP (Standard CRM User)' }}
+          </mat-option>
+        }
+      </mat-select>
+      <mat-icon matPrefix>security</mat-icon>
+      @if (form.get('role')?.hasError('required') && form.get('role')?.touched) {
+        <mat-error>Role selection is required</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Active Status Checkbox -->
+    <div class="checkbox-row">
+      <mat-checkbox formControlName="active" color="primary">
+        <strong>Active Account:</strong> User can log in and perform assigned duties.
+      </mat-checkbox>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-button type="button" (click)="onCancel()" [disabled]="isSaving()">
+    Cancel
+  </button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="onSubmit()"
+    [disabled]="form.invalid || isSaving()"
+  >
+    @if (isSaving()) {
+      <mat-spinner diameter="18" class="btn-spinner"></mat-spinner>
+      <span>Saving User...</span>
+    } @else {
+      <ng-container>
+        <mat-icon>{{ isCreateMode ? 'add' : 'check' }}</mat-icon>
+        <span>{{ isCreateMode ? 'Create User' : 'Save Changes' }}</span>
+      </ng-container>
+    }
+  </button>
+</mat-dialog-actions>
+

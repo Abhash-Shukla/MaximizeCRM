@@ -4,43 +4,61 @@
   z-index: 1000;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  white-space: normal;
+  height: auto;
+  min-height: 64px;
+  max-width: 100%;
+  box-sizing: border-box;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 0 24px;
+  padding: 0 16px;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
   text-decoration: none;
   color: inherit;
-  margin-right: 24px;
+  margin-right: 16px;
+  flex-shrink: 0;
 }
 
 .toolbar-title {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 600;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex-shrink: 1;
 
   a {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    color: rgba(255, 255, 255, 0.85);
+    gap: 4px;
+    padding: 0 8px;
+    --mat-button-horizontal-padding: 8px;
+    min-width: auto;
+    height: 36px;
+    line-height: 36px;
+    font-size: 0.85rem;
     font-weight: 500;
+    color: rgba(255, 255, 255, 0.88);
+    border-radius: 6px;
     transition: all 0.15s ease;
+    white-space: nowrap;
 
     mat-icon {
-      font-size: 20px;
-      height: 20px;
-      width: 20px;
+      font-size: 18px;
+      height: 18px;
+      width: 18px;
     }
 
     &:hover {
@@ -50,7 +68,7 @@
 
     &.active-nav {
       color: #ffffff;
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.22);
       font-weight: 600;
     }
   }
@@ -58,21 +76,142 @@
 
 .spacer {
   flex: 1 1 auto;
+  min-width: 8px;
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  flex-shrink: 0;
 
   .user-greeting {
-    font-size: 0.95rem;
+    font-size: 0.875rem;
     font-weight: 500;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
+
+  mat-chip {
+    font-size: 0.75rem;
+    min-height: 24px;
+    height: 24px;
+    padding: 0 8px;
+  }
+
+  button[mat-icon-button] {
+    width: 36px;
+    height: 36px;
+    line-height: 36px;
+    padding: 0;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+.tech-chips {
+  flex-shrink: 0;
 }
 
 .content-container {
   max-width: 1240px;
   margin: 24px auto;
   padding: 0 16px;
+  box-sizing: border-box;
+}
+
+/* Tablet & Medium Screens (< 1180px) */
+@media (max-width: 1180px) {
+  .app-toolbar {
+    padding: 8px 16px;
+    row-gap: 8px;
+  }
+
+  .brand {
+    order: 1;
+    margin-right: auto;
+  }
+
+  .user-info {
+    order: 2;
+  }
+
+  .tech-chips {
+    order: 2;
+  }
+
+  .spacer {
+    display: none;
+  }
+
+  .nav-links {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+  }
+}
+
+/* Mobile Screens (< 600px) */
+@media (max-width: 599px) {
+  .app-toolbar {
+    padding: 6px 12px;
+    row-gap: 6px;
+  }
+
+  .brand {
+    gap: 6px;
+
+    .toolbar-title {
+      font-size: 1.05rem;
+    }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .user-info {
+    gap: 6px;
+
+    .user-greeting {
+      max-width: 85px;
+      font-size: 0.8rem;
+    }
+
+    mat-chip {
+      font-size: 0.7rem;
+      min-height: 22px;
+      height: 22px;
+      padding: 0 6px;
+    }
+  }
+
+  .nav-links {
+    gap: 2px;
+
+    a {
+      padding: 0 5px;
+      --mat-button-horizontal-padding: 5px;
+      font-size: 0.775rem;
+      height: 32px;
+      line-height: 32px;
+      gap: 3px;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
 }

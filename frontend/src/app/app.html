@@ -5,7 +5,7 @@
   </div>
 
   @if (isAuthenticated()) {
-    <nav class="nav-links">
+    <nav class="nav-links" aria-label="Main Navigation">
       <a mat-button routerLink="/dashboard" routerLinkActive="active-nav">
         <mat-icon>dashboard</mat-icon>
         Dashboard
@@ -34,6 +34,12 @@
         <mat-icon>insights</mat-icon>
         Reports
       </a>
+      @if (currentUser()?.role === 'ADMIN') {
+        <a mat-button routerLink="/users" routerLinkActive="active-nav">
+          <mat-icon>manage_accounts</mat-icon>
+          Users
+        </a>
+      }
     </nav>
   }
 
@@ -41,14 +47,14 @@
 
   @if (isAuthenticated(); as authed) {
     <div class="user-info">
-      <span class="user-greeting">{{ currentUser()?.fullName }}</span>
+      <span class="user-greeting" [title]="currentUser()?.fullName || ''">{{ currentUser()?.fullName }}</span>
       <mat-chip highlighted>{{ currentUser()?.role }}</mat-chip>
       <button mat-icon-button (click)="logout()" title="Sign Out">
         <mat-icon>logout</mat-icon>
       </button>
     </div>
   } @else {
-    <mat-chip-set>
+    <mat-chip-set class="tech-chips">
       <mat-chip highlighted>Angular 21</mat-chip>
       <mat-chip highlighted>Spring Boot 3.5</mat-chip>
       <mat-chip highlighted>Java 25</mat-chip>

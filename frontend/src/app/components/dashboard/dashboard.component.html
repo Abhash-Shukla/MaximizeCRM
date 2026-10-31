@@ -142,6 +142,26 @@
       </mat-card-content>
     </mat-card>
 
+    <!-- Admin User Management Card -->
+    @if (user()?.role === 'ADMIN') {
+      <mat-card class="action-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar color="primary">manage_accounts</mat-icon>
+          <mat-card-title>User Management</mat-card-title>
+          <mat-card-subtitle>System administrator controls and access provisioning</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content class="card-content">
+          <p>Create and edit system users, assign ADMIN or SALES_REP roles, configure passwords, and manage account active/inactive statuses.</p>
+
+          <a mat-raised-button color="primary" routerLink="/users">
+            <mat-icon>manage_accounts</mat-icon>
+            Open User Directory
+          </a>
+        </mat-card-content>
+      </mat-card>
+    }
+
     <!-- Protected Route Verification Card -->
     <mat-card class="action-card">
       <mat-card-header>
