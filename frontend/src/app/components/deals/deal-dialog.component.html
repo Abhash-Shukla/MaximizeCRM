@@ -1,0 +1,160 @@
+<h2 mat-dialog-title class="dialog-title">
+  <mat-icon color="primary">{{ isCreateMode ? 'monetization_on' : 'edit' }}</mat-icon>
+  <span>{{ title }}</span>
+</h2>
+
+<mat-dialog-content class="dialog-content">
+  @if (errorMessage(); as err) {
+    <div class="alert alert-error">
+      <mat-icon>error</mat-icon>
+      <span>{{ err }}</span>
+    </div>
+  }
+
+  @if (loadingData()) {
+    <div class="loading-state">
+      <mat-spinner diameter="30"></mat-spinner>
+      <span>Loading lead and representative data...</span>
+    </div>
+  } @else {
+    <form [formGroup]="form" class="deal-form" (ngSubmit)="onSubmit()">
+      <!-- Lead Selection (Create Mode) / Readonly Info (Edit Mode) -->
+      @if (isCreateMode) {
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Select Available Lead *</mat-label>
+          <mat-select formControlName="leadId" placeholder="Choose a lead without an existing deal" (valueChange)="onLeadSelected($event)" required>
+            @for (lead of availableLeads(); track lead.id) {
+              <mat-option [value]="lead.id">
+                #{{ lead.id }} - {{ lead.contactName }}
+                @if (lead.contactCompany) {
+                  ({{ lead.contactCompany }})
+                }
+                - [{{ lead.source }} / {{ lead.status }}]
+              </mat-option>
+            }
+          </mat-select>
+          <mat-icon matPrefix>add_business</mat-icon>
+          @if (form.get('leadId')?.hasError('required') && form.get('leadId')?.touched) {
+            <mat-error>Lead is required to create a deal.</mat-error>
+          }
+        </mat-form-field>
+
+        @if (availableLeads().length === 0) {
+          <div class="alert alert-info">
+            <mat-icon>info</mat-icon>
+            <span>All existing leads already have associated deals. Create a new lead first.</span>
+          </div>
+        }
+      } @else if (data.deal) {
+        <div class="readonly-lead-card">
+          <div class="readonly-row">
+            <span class="label">Linked Contact:</span>
+            <span class="val font-semibold">{{ data.deal.contactName }} ({{ data.deal.contactCompany || 'No Company' }})</span>
+          </div>
+          <div class="readonly-row">
+            <span class="label">Lead Opportunity:</span>
+            <span class="val">#{{ data.deal.leadId }} - {{ data.deal.leadSource }} [{{ data.deal.leadStatus }}]</span>
+          </div>
+          @if (data.deal.closedAt) {
+            <div class="readonly-row closed-notice">
+              <span class="label">Closed On:</span>
+              <span class="val font-semibold">{{ data.deal.closedAt | date:'medium' }}</span>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Deal Name -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Deal Name *</mat-label>
+        <input matInput formControlName="name" placeholder="e.g. Acme Enterprise Subscription" maxlength="150" required />
+        <mat-icon matPrefix>label</mat-icon>
+        @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
+          <mat-error>Deal name is required.</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Amount and Assigned User Row -->
+      <div class="form-row">
+        <!-- Deal Amount -->
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Deal Amount ($) *</mat-label>
+          <input matInput type="number" formControlName="amount" placeholder="0.00" min="0.01" step="0.01" required />
+          <mat-icon matPrefix>attach_money</mat-icon>
+          @if (form.get('amount')?.hasError('required') && form.get('amount')?.touched) {
+            <mat-error>Amount is required.</mat-error>
+          }
+          @if (form.get('amount')?.hasError('min') && form.get('amount')?.touched) {
+            <mat-error>Amount must be greater than zero.</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Stage Field -->
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Stage *</mat-label>
+          <mat-select formControlName="stage" required>
+            @for (stg of allowedStages; track stg) {
+              <mat-option [value]="stg">
+                {{ stg }}
+              </mat-option>
+            }
+          </mat-select>
+          <mat-icon matPrefix>show_chart</mat-icon>
+          @if (isCreateMode) {
+            <mat-hint>New deals always start at PROSPECT</mat-hint>
+          } @else {
+            <mat-hint>Forward-only stage transitions</mat-hint>
+          }
+        </mat-form-field>
+      </div>
+
+      <!-- Assigned User Selection -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Assigned Representative *</mat-label>
+        <mat-select formControlName="assignedUserId" placeholder="Assign user" required>
+          @for (user of users(); track user.id) {
+            <mat-option [value]="user.id">
+              {{ user.fullName }}
+              <span class="option-role">[{{ user.role }}]</span>
+            </mat-option>
+          }
+        </mat-select>
+        <mat-icon matPrefix>assignment_ind</mat-icon>
+        @if (form.get('assignedUserId')?.hasError('required') && form.get('assignedUserId')?.touched) {
+          <mat-error>Assigned user is required.</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Notes Field -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Deal Notes (Optional)</mat-label>
+        <textarea
+          matInput
+          formControlName="notes"
+          rows="3"
+          placeholder="Key deal details, budget constraints, expected timeline..."
+        ></textarea>
+        <mat-icon matPrefix>notes</mat-icon>
+      </mat-form-field>
+    </form>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-button type="button" (click)="onCancel()" [disabled]="isSaving()">Cancel</button>
+  <button
+    mat-raised-button
+    color="primary"
+    type="button"
+    (click)="onSubmit()"
+    [disabled]="form.invalid || isSaving() || (isCreateMode && availableLeads().length === 0)"
+  >
+    @if (isSaving()) {
+      <mat-spinner diameter="18"></mat-spinner>
+      <span class="btn-spinner-text">Saving...</span>
+    } @else {
+      {{ submitButtonLabel }}
+    }
+  </button>
+</mat-dialog-actions>
+

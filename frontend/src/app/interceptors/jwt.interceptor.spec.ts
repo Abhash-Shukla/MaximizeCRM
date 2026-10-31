@@ -40,6 +40,17 @@ describe('jwtInterceptor', () => {
     req.flush([]);
   });
 
+  it('should attach Authorization Bearer token to /api/deals request when token is present', () => {
+    sessionStorage.setItem('auth_token', 'valid-test-token-deals');
+
+    http.get('/api/deals').subscribe();
+
+    const req = httpMock.expectOne('/api/deals');
+    expect(req.request.headers.has('Authorization')).toBe(true);
+    expect(req.request.headers.get('Authorization')).toBe('Bearer valid-test-token-deals');
+    req.flush([]);
+  });
+
   it('should attach Authorization Bearer token to /api/contacts request when token is present', () => {
     sessionStorage.setItem('auth_token', 'valid-test-token-contacts');
 

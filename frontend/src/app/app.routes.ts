@@ -1,15 +1,31 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './components/login/login.component';
-import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { ContactsComponent } from './components/contacts/contacts.component';
-import { LeadsComponent } from './components/leads/leads.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: 'login', component: LoginComponent },
-  { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
-  { path: 'contacts', component: ContactsComponent, canActivate: [authGuard] },
-  { path: 'leads', component: LeadsComponent, canActivate: [authGuard] },
+  {
+    path: 'login',
+    loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent)
+  },
+  {
+    path: 'dashboard',
+    loadComponent: () => import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'contacts',
+    loadComponent: () => import('./components/contacts/contacts.component').then(m => m.ContactsComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'leads',
+    loadComponent: () => import('./components/leads/leads.component').then(m => m.LeadsComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'deals',
+    loadComponent: () => import('./components/deals/deals.component').then(m => m.DealsComponent),
+    canActivate: [authGuard]
+  },
   { path: '**', redirectTo: 'login' }
 ];
