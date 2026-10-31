@@ -1,0 +1,91 @@
+<div class="login-wrapper">
+  <mat-card class="login-card">
+    <mat-card-header class="login-header">
+      <div class="icon-circle">
+        <mat-icon>lock</mat-icon>
+      </div>
+      <mat-card-title>MaximizeCRM Login</mat-card-title>
+      <mat-card-subtitle>Sign in to access your CRM workspace</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      @if (errorMessage(); as error) {
+        <div class="error-banner">
+          <mat-icon color="warn">error_outline</mat-icon>
+          <span>{{ error }}</span>
+        </div>
+      }
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+        <!-- Email field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email Address</mat-label>
+          <input
+            matInput
+            type="email"
+            formControlName="email"
+            placeholder="admin@maximizecrm.local"
+            autocomplete="email"
+          />
+          <mat-icon matPrefix>email</mat-icon>
+          @if (loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched) {
+            <mat-error>Email is required</mat-error>
+          }
+          @if (loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched) {
+            <mat-error>Please enter a valid email address</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Password field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            [type]="hidePassword() ? 'password' : 'text'"
+            formControlName="password"
+            placeholder="Enter password"
+            autocomplete="current-password"
+          />
+          <mat-icon matPrefix>vpn_key</mat-icon>
+          <button
+            type="button"
+            mat-icon-button
+            matSuffix
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="'Hide password'"
+            [attr.aria-pressed]="hidePassword()"
+          >
+            <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched) {
+            <mat-error>Password is required</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Submit Button -->
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          class="submit-btn"
+          [disabled]="loading()"
+        >
+          @if (loading()) {
+            <mat-spinner diameter="20" class="spinner"></mat-spinner>
+            <span>Signing In...</span>
+          } @else {
+            <span>Sign In</span>
+          }
+        </button>
+      </form>
+
+      <!-- Dev credentials hint -->
+      <div class="dev-hint">
+        <strong>Development Account:</strong><br />
+        Email: <code>admin@maximizecrm.local</code><br />
+        Password: <code>Admin@123</code> (Role: <code>ADMIN</code>)
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+

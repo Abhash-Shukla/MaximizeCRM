@@ -1,27 +1,56 @@
-# IntelliJ IDEA
-.idea/
-*.iml
+# ===================================================================
+# MaximizeCRM .gitignore
+# ===================================================================
 
-# VS Code
-.vscode/
-
-# Java / Maven
+# Build artifacts
 target/
-*.class
-
-# Node
-node_modules/
 dist/
 build/
+bin/
+out/
+*.class
+*.jar
+*.war
 
-# Environment files
+# Node dependencies & cache
+node_modules/
+.npm/
+.angular/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment and secrets
 .env
 .env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 !.env.example
 
+# IDE & Editor files
+.idea/
+*.iml
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+.nb-gradle/
+
 # Logs
+logs/
 *.log
 
-# OS
+# Operating System files
 .DS_Store
 Thumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~

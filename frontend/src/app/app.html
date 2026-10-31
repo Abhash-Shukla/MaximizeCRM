@@ -1,0 +1,41 @@
+<mat-toolbar color="primary" class="app-toolbar">
+  <div class="brand" routerLink="/">
+    <mat-icon>assessment</mat-icon>
+    <span class="toolbar-title">{{ title() }}</span>
+  </div>
+
+  @if (isAuthenticated()) {
+    <nav class="nav-links">
+      <a mat-button routerLink="/dashboard" routerLinkActive="active-nav">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </a>
+      <a mat-button routerLink="/contacts" routerLinkActive="active-nav">
+        <mat-icon>contacts</mat-icon>
+        Contacts
+      </a>
+    </nav>
+  }
+
+  <span class="spacer"></span>
+
+  @if (isAuthenticated(); as authed) {
+    <div class="user-info">
+      <span class="user-greeting">{{ currentUser()?.fullName }}</span>
+      <mat-chip highlighted>{{ currentUser()?.role }}</mat-chip>
+      <button mat-icon-button (click)="logout()" title="Sign Out">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+  } @else {
+    <mat-chip-set>
+      <mat-chip highlighted>Angular 21</mat-chip>
+      <mat-chip highlighted>Spring Boot 3.5</mat-chip>
+      <mat-chip highlighted>Java 25</mat-chip>
+    </mat-chip-set>
+  }
+</mat-toolbar>
+
+<main class="content-container">
+  <router-outlet></router-outlet>
+</main>

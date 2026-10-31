@@ -1,0 +1,85 @@
+<h2 mat-dialog-title class="dialog-title">
+  <mat-icon color="primary">{{ data.mode === 'create' ? 'person_add' : 'edit' }}</mat-icon>
+  <span>{{ title }}</span>
+</h2>
+
+<mat-dialog-content class="dialog-content">
+  @if (errorMessage(); as err) {
+    <div class="alert alert-error">
+      <mat-icon>error</mat-icon>
+      <span>{{ err }}</span>
+    </div>
+  }
+
+  <form [formGroup]="form" class="contact-form" (ngSubmit)="onSubmit()">
+    <!-- Name Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Contact Name *</mat-label>
+      <input matInput formControlName="name" placeholder="e.g. John Doe" required />
+      <mat-icon matPrefix>person</mat-icon>
+      @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
+        <mat-error>Contact name is required.</mat-error>
+      }
+      @if (form.get('name')?.hasError('maxlength')) {
+        <mat-error>Name cannot exceed 100 characters.</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Email & Phone Row -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Email Address</mat-label>
+        <input matInput formControlName="email" type="email" placeholder="john@example.com" />
+        <mat-icon matPrefix>email</mat-icon>
+        @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
+          <mat-error>Please enter a valid email address.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Phone Number</mat-label>
+        <input matInput formControlName="phone" placeholder="+1-555-0100" />
+        <mat-icon matPrefix>phone</mat-icon>
+      </mat-form-field>
+    </div>
+
+    <!-- Category & Company Row -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Category *</mat-label>
+        <mat-select formControlName="category">
+          @for (cat of categories; track cat) {
+            <mat-option [value]="cat">{{ cat }}</mat-option>
+          }
+        </mat-select>
+        <mat-icon matPrefix>label</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Company</mat-label>
+        <input matInput formControlName="company" placeholder="e.g. Acme Corp" />
+        <mat-icon matPrefix>business</mat-icon>
+      </mat-form-field>
+    </div>
+
+    <!-- Notes Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Notes</mat-label>
+      <textarea matInput formControlName="notes" rows="3" placeholder="Optional notes or context"></textarea>
+      <mat-icon matPrefix>notes</mat-icon>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-button type="button" (click)="onCancel()" [disabled]="isSaving()">
+    Cancel
+  </button>
+  <button mat-raised-button color="primary" type="button" (click)="onSubmit()" [disabled]="isSaving()">
+    @if (isSaving()) {
+      <mat-spinner diameter="18" class="btn-spinner"></mat-spinner>
+    }
+    {{ submitButtonLabel }}
+  </button>
+</mat-dialog-actions>
+

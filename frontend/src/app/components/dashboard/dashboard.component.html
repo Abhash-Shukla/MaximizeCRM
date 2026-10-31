@@ -1,0 +1,140 @@
+<div class="dashboard-container">
+  <!-- Welcome Card -->
+  <mat-card class="welcome-card">
+    <mat-card-header>
+      <div mat-card-avatar class="user-avatar">
+        <mat-icon>account_circle</mat-icon>
+      </div>
+      <mat-card-title>Welcome, {{ user()?.fullName || 'User' }}</mat-card-title>
+      <mat-card-subtitle>{{ user()?.email }}</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content class="user-details">
+      <div class="detail-row">
+        <span class="label">User ID:</span>
+        <span class="value">{{ user()?.id }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Assigned Role:</span>
+        <mat-chip highlighted color="primary">{{ user()?.role }}</mat-chip>
+      </div>
+      <div class="detail-row">
+        <span class="label">Authentication State:</span>
+        <span class="value badge-authenticated">JWT Authenticated (sessionStorage)</span>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button mat-stroked-button color="warn" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Sign Out
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Verification Cards Grid -->
+  <div class="grid-layout">
+    <!-- Contacts Module Quick Navigation Card -->
+    <mat-card class="action-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar color="primary">contacts</mat-icon>
+        <mat-card-title>Contacts Management</mat-card-title>
+        <mat-card-subtitle>Create, search, filter, edit, and organize contacts</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content class="card-content">
+        <p>Manage your client and prospect directory with categories (NEW, REGULAR, VIP), duplicate checks, and full CRUD operations.</p>
+
+        <a mat-raised-button color="primary" routerLink="/contacts">
+          <mat-icon>contacts</mat-icon>
+          Open Contacts Directory
+        </a>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Protected Route Verification Card -->
+    <mat-card class="action-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar color="primary">security</mat-icon>
+        <mat-card-title>Protected API Verification</mat-card-title>
+        <mat-card-subtitle>Calls <code>GET /api/auth/me</code> with Bearer token interceptor</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content class="card-content">
+        <p>Tests that the <code>jwtInterceptor</code> automatically sends the JWT from <code>sessionStorage</code> and the Spring Security filter validates the token.</p>
+
+        <button mat-raised-button color="primary" (click)="testProtectedApi()" [disabled]="meLoading()">
+          <mat-icon>verified_user</mat-icon>
+          Test Protected Endpoint
+        </button>
+
+        @if (meLoading()) {
+          <div class="status-box loading">
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Verifying Bearer token...</span>
+          </div>
+        }
+
+        @if (meData(); as data) {
+          <div class="status-box success">
+            <mat-icon>check_circle</mat-icon>
+            <div>
+              <strong>Authenticated Profile Returned:</strong><br />
+              ID: {{ data.id }} | Email: {{ data.email }} | Role: {{ data.role }}
+            </div>
+          </div>
+        }
+
+        @if (meError(); as err) {
+          <div class="status-box error">
+            <mat-icon>error</mat-icon>
+            <div>{{ err }}</div>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Health Check Card (Preserved from step 1) -->
+    <mat-card class="action-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar color="accent">favorite</mat-icon>
+        <mat-card-title>Backend Health Check</mat-card-title>
+        <mat-card-subtitle>Calls public <code>GET /api/health</code></mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content class="card-content">
+        <p>Tests public endpoint accessibility configured to bypass security filter chain.</p>
+
+        <button mat-raised-button color="accent" (click)="testHealthCheck()" [disabled]="healthLoading()">
+          <mat-icon>refresh</mat-icon>
+          Ping Health Endpoint
+        </button>
+
+        @if (healthLoading()) {
+          <div class="status-box loading">
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Checking server health...</span>
+          </div>
+        }
+
+        @if (healthData(); as data) {
+          <div class="status-box success">
+            <mat-icon>check_circle</mat-icon>
+            <div>
+              <strong>Status:</strong> {{ data.status }}<br />
+              <strong>Application:</strong> {{ data.application }}
+            </div>
+          </div>
+        }
+
+        @if (healthError(); as err) {
+          <div class="status-box error">
+            <mat-icon>error</mat-icon>
+            <div>{{ err }}</div>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
