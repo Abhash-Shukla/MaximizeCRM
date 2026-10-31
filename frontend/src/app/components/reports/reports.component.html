@@ -1,0 +1,342 @@
+<div class="reports-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-titles">
+      <div class="breadcrumb">
+        <a routerLink="/dashboard" class="back-link">
+          <mat-icon>arrow_back</mat-icon>
+          <span>Dashboard</span>
+        </a>
+      </div>
+      <h1 class="page-title">Executive Reports & Sales Analytics</h1>
+      <p class="page-subtitle">Business intelligence, sales performance, conversion metrics, and pipeline distributions.</p>
+    </div>
+
+    <div class="header-actions">
+      <button mat-stroked-button color="primary" (click)="loadReport()" [disabled]="loading()" class="refresh-btn">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
+      <button mat-raised-button color="primary" (click)="exportCsv()" [disabled]="loading() || !summary()" class="export-btn">
+        <mat-icon>download</mat-icon>
+        Export CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter & Period Controls -->
+  <mat-card class="filter-card">
+    <div class="filter-toolbar">
+      <!-- Preset Buttons -->
+      <div class="presets-group">
+        <span class="preset-label">Period:</span>
+        <button
+          mat-button
+          [class.active-preset]="activePreset === 'all'"
+          (click)="applyPreset('all')"
+        >
+          All Time
+        </button>
+        <button
+          mat-button
+          [class.active-preset]="activePreset === 'thisMonth'"
+          (click)="applyPreset('thisMonth')"
+        >
+          This Month
+        </button>
+        <button
+          mat-button
+          [class.active-preset]="activePreset === 'last30Days'"
+          (click)="applyPreset('last30Days')"
+        >
+          Last 30 Days
+        </button>
+        <button
+          mat-button
+          [class.active-preset]="activePreset === 'thisYear'"
+          (click)="applyPreset('thisYear')"
+        >
+          This Year
+        </button>
+      </div>
+
+      <!-- Date Inputs & User Dropdown -->
+      <div class="inputs-group">
+        <mat-form-field appearance="outline" class="date-field" subscriptSizing="dynamic">
+          <mat-label>Start Date</mat-label>
+          <input
+            matInput
+            type="date"
+            [(ngModel)]="startDate"
+            (change)="onCustomDateChange()"
+          />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="date-field" subscriptSizing="dynamic">
+          <mat-label>End Date</mat-label>
+          <input
+            matInput
+            type="date"
+            [(ngModel)]="endDate"
+            (change)="onCustomDateChange()"
+          />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="user-field" subscriptSizing="dynamic">
+          <mat-label>Sales Rep</mat-label>
+          <mat-select [(ngModel)]="selectedUserId" (selectionChange)="loadReport()">
+            <mat-option value="">All Team Members</mat-option>
+            @for (u of users(); track u.id) {
+              <mat-option [value]="u.id">{{ u.fullName }} ({{ u.role }})</mat-option>
+            }
+          </mat-select>
+          <mat-icon matPrefix>person</mat-icon>
+        </mat-form-field>
+
+        @if (startDate || endDate || selectedUserId !== '' || activePreset !== 'all') {
+          <button mat-stroked-button (click)="resetFilters()" class="clear-btn">
+            <mat-icon>filter_alt_off</mat-icon>
+            Reset
+          </button>
+        }
+      </div>
+    </div>
+  </mat-card>
+
+  <!-- Error Alert -->
+  @if (error(); as err) {
+    <div class="alert alert-error">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ err }}</span>
+      <button mat-button color="warn" (click)="loadReport()">Retry</button>
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-state">
+      <mat-spinner diameter="40"></mat-spinner>
+      <span>Calculating CRM metrics...</span>
+    </div>
+  }
+
+  <!-- Report Content -->
+  @if (!loading() && summary(); as data) {
+    <!-- SRS Core Metrics Row (FR-7.1 to FR-7.4) -->
+    <div class="metrics-grid">
+      <!-- FR-7.1: Total Leads -->
+      <mat-card class="kpi-card">
+        <div class="kpi-icon-box kpi-blue">
+          <mat-icon>add_business</mat-icon>
+        </div>
+        <div class="kpi-data">
+          <span class="kpi-label">Total Leads (FR-7.1)</span>
+          <span class="kpi-value">{{ data.totalLeads }}</span>
+          <span class="kpi-desc">Prospective client opportunities</span>
+        </div>
+      </mat-card>
+
+      <!-- FR-7.2: Deals Won -->
+      <mat-card class="kpi-card">
+        <div class="kpi-icon-box kpi-green">
+          <mat-icon>emoji_events</mat-icon>
+        </div>
+        <div class="kpi-data">
+          <span class="kpi-label">Deals Won (FR-7.2)</span>
+          <span class="kpi-value">{{ data.dealsWon }}</span>
+          <span class="kpi-desc">Successfully closed sales</span>
+        </div>
+      </mat-card>
+
+      <!-- FR-7.3: Sales Amount -->
+      <mat-card class="kpi-card">
+        <div class="kpi-icon-box kpi-emerald">
+          <mat-icon>monetization_on</mat-icon>
+        </div>
+        <div class="kpi-data">
+          <span class="kpi-label">Closed Revenue (FR-7.3)</span>
+          <span class="kpi-value">{{ data.salesAmount | currency:'USD':'symbol':'1.0-0' }}</span>
+          <span class="kpi-desc">Total value of won opportunities</span>
+        </div>
+      </mat-card>
+
+      <!-- FR-7.4: Conversion Rate -->
+      <mat-card class="kpi-card">
+        <div class="kpi-icon-box kpi-purple">
+          <mat-icon>query_stats</mat-icon>
+        </div>
+        <div class="kpi-data">
+          <span class="kpi-label">Conversion Rate (FR-7.4)</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value">{{ data.conversionRate }}%</span>
+            <span class="rate-badge" [class.rate-high]="data.conversionRate >= 20" [class.rate-mid]="data.conversionRate > 0 && data.conversionRate < 20">
+              {{ data.dealsWon }}/{{ data.totalLeads }} Won
+            </span>
+          </div>
+          <mat-progress-bar mode="determinate" [value]="data.conversionRate" class="conversion-bar"></mat-progress-bar>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- Secondary Insights Row -->
+    <div class="secondary-grid">
+      <div class="sub-card">
+        <span class="sub-label">Total Deals & Pipeline Value</span>
+        <span class="sub-val">{{ data.totalDeals }} deals &middot; {{ data.totalPipelineValue | currency:'USD':'symbol':'1.0-0' }}</span>
+      </div>
+      <div class="sub-card">
+        <span class="sub-label">Average Won Deal Size</span>
+        <span class="sub-val">{{ data.averageDealSize | currency:'USD':'symbol':'1.0-0' }}</span>
+      </div>
+      <div class="sub-card">
+        <span class="sub-label">Marketing Campaigns</span>
+        <span class="sub-val">{{ data.totalCampaigns }} total ({{ data.activeCampaigns }} active)</span>
+      </div>
+      <div class="sub-card">
+        <span class="sub-label">Pending / Overdue Reminders</span>
+        <span class="sub-val">{{ data.pendingReminders }} pending ({{ data.overdueReminders }} overdue)</span>
+      </div>
+    </div>
+
+    <!-- Visual Charts & Distributions Grid (FR-7.5 & FR-7.6) -->
+    <div class="charts-grid">
+      <!-- FR-7.5: Deals by Stage -->
+      <mat-card class="chart-card">
+        <div class="card-header-bar">
+          <div class="header-icon-title">
+            <mat-icon color="primary">bar_chart</mat-icon>
+            <h2>Deals by Stage (FR-7.5)</h2>
+          </div>
+          <span class="header-count">{{ data.totalDeals }} Total Deals</span>
+        </div>
+
+        @if (data.totalDeals === 0) {
+          <div class="empty-chart">
+            <mat-icon>folder_open</mat-icon>
+            <p>No deals recorded for the selected period.</p>
+          </div>
+        } @else {
+          <div class="stage-list">
+            @for (item of data.dealsByStage; track item.stage) {
+              <div class="stage-row">
+                <div class="stage-info">
+                  <div class="stage-badge-name">
+                    <span class="stage-badge" [ngClass]="getStageColorClass(item.stage)">{{ item.stage }}</span>
+                  </div>
+                  <div class="stage-meta">
+                    <span class="stage-count font-semibold">{{ item.count }} deals</span>
+                    <span class="stage-amount text-muted">({{ item.totalAmount | currency:'USD':'symbol':'1.0-0' }})</span>
+                    <span class="stage-pct">{{ item.percentage }}%</span>
+                  </div>
+                </div>
+                <div class="bar-track">
+                  <div
+                    class="bar-fill"
+                    [ngClass]="getStageColorClass(item.stage)"
+                    [style.width.%]="item.percentage"
+                  ></div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </mat-card>
+
+      <!-- FR-7.6: Leads by Source -->
+      <mat-card class="chart-card">
+        <div class="card-header-bar">
+          <div class="header-icon-title">
+            <mat-icon color="primary">pie_chart</mat-icon>
+            <h2>Leads by Source (FR-7.6)</h2>
+          </div>
+          <span class="header-count">{{ data.totalLeads }} Total Leads</span>
+        </div>
+
+        @if (data.totalLeads === 0) {
+          <div class="empty-chart">
+            <mat-icon>folder_open</mat-icon>
+            <p>No leads recorded for the selected period.</p>
+          </div>
+        } @else {
+          <div class="source-list">
+            @for (src of data.leadsBySource; track src.source) {
+              <div class="source-row">
+                <div class="source-info">
+                  <span class="source-name font-semibold">{{ src.source }}</span>
+                  <div class="source-meta">
+                    <span class="source-count">{{ src.count }} leads</span>
+                    <span class="source-pct font-semibold">{{ src.percentage }}%</span>
+                  </div>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill source-fill" [style.width.%]="src.percentage"></div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </mat-card>
+
+      <!-- Lead Funnel Status Breakdown -->
+      <mat-card class="chart-card">
+        <div class="card-header-bar">
+          <div class="header-icon-title">
+            <mat-icon color="primary">filter_alt</mat-icon>
+            <h2>Lead Qualification Funnel</h2>
+          </div>
+        </div>
+
+        @if (data.totalLeads === 0) {
+          <div class="empty-chart">
+            <mat-icon>folder_open</mat-icon>
+            <p>No leads recorded for the selected period.</p>
+          </div>
+        } @else {
+          <div class="status-list">
+            @for (st of data.leadsByStatus; track st.status) {
+              <div class="status-row">
+                <div class="status-info">
+                  <span class="status-badge-lbl">{{ st.status }}</span>
+                  <span class="status-val font-semibold">{{ st.count }} ({{ st.percentage }}%)</span>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill funnel-fill" [style.width.%]="st.percentage"></div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </mat-card>
+
+      <!-- Campaign Financial Overview -->
+      <mat-card class="chart-card">
+        <div class="card-header-bar">
+          <div class="header-icon-title">
+            <mat-icon color="primary">campaign</mat-icon>
+            <h2>Campaign Budget vs Expected ROI</h2>
+          </div>
+        </div>
+
+        <div class="campaign-summary-box">
+          <div class="camp-stat-row">
+            <span class="camp-label">Active Marketing Initiatives:</span>
+            <span class="camp-value font-semibold">{{ data.activeCampaigns }} of {{ data.totalCampaigns }} total</span>
+          </div>
+          <div class="camp-stat-row">
+            <span class="camp-label">Allocated Budget:</span>
+            <span class="camp-value text-budget">{{ data.totalCampaignBudget | currency:'USD':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="camp-stat-row">
+            <span class="camp-label">Expected Pipeline Revenue:</span>
+            <span class="camp-value text-revenue font-semibold">{{ data.totalExpectedCampaignRevenue | currency:'USD':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="camp-stat-row">
+            <span class="camp-label">Customer Contacts Directory:</span>
+            <span class="camp-value">{{ data.totalContacts }} contacts</span>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+  }
+</div>
+

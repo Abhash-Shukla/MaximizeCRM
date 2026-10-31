@@ -37,5 +37,10 @@ export const routes: Routes = [
     loadComponent: () => import('./components/reminders/reminders.component').then(m => m.RemindersComponent),
     canActivate: [authGuard]
   },
+  {
+    path: 'reports',
+    loadComponent: () => import('./components/reports/reports.component').then(m => m.ReportsComponent),
+    canActivate: [authGuard]
+  },
   { path: '**', redirectTo: 'login' }
 ];

@@ -119,4 +119,22 @@ class SecurityIntegrationTest {
                 .header("Authorization", "Bearer " + token))
             .andExpect(status().isOk());
     }
+
+    @Test
+    @DisplayName("GET /api/reports/summary without token should return 401")
+    void getReportsSummary_WithoutToken_Returns401() throws Exception {
+        mockMvc.perform(get("/api/reports/summary"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("GET /api/reports/summary with token should return 200")
+    void getReportsSummary_WithToken_Returns200() throws Exception {
+        User admin = userRepository.findByEmailIgnoreCase("admin@maximizecrm.local").orElseThrow();
+        String token = jwtService.generateToken(admin);
+
+        mockMvc.perform(get("/api/reports/summary")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk());
+    }
 }
