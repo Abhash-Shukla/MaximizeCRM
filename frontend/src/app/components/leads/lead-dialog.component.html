@@ -1,0 +1,141 @@
+<h2 mat-dialog-title class="dialog-title">
+  <mat-icon color="primary">{{ data.mode === 'create' ? 'add_business' : 'edit' }}</mat-icon>
+  <span>{{ title }}</span>
+</h2>
+
+<mat-dialog-content class="dialog-content">
+  @if (errorMessage(); as err) {
+    <div class="alert alert-error">
+      <mat-icon>error</mat-icon>
+      <span>{{ err }}</span>
+    </div>
+  }
+
+  @if (loadingData()) {
+    <div class="loading-state">
+      <mat-spinner diameter="30"></mat-spinner>
+      <span>Loading contacts and assignable users...</span>
+    </div>
+  } @else {
+    <form [formGroup]="form" class="lead-form" (ngSubmit)="onSubmit()">
+      <!-- Contact Selection -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Select Linked Contact *</mat-label>
+        <mat-select formControlName="contactId" placeholder="Choose a contact" required>
+          @for (contact of contacts(); track contact.id) {
+            <mat-option [value]="contact.id">
+              {{ contact.name }}
+              @if (contact.company) {
+                <span class="option-subtitle">({{ contact.company }})</span>
+              }
+            </mat-option>
+          }
+        </mat-select>
+        <mat-icon matPrefix>person</mat-icon>
+        @if (form.get('contactId')?.hasError('required') && form.get('contactId')?.touched) {
+          <mat-error>Linked contact is required.</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Assigned User Selection -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Assign to User / Sales Rep *</mat-label>
+        <mat-select formControlName="assignedUserId" placeholder="Assign user" required>
+          @for (user of users(); track user.id) {
+            <mat-option [value]="user.id">
+              {{ user.fullName }}
+              <span class="option-role">[{{ user.role }}]</span>
+            </mat-option>
+          }
+        </mat-select>
+        <mat-icon matPrefix>assignment_ind</mat-icon>
+        @if (form.get('assignedUserId')?.hasError('required') && form.get('assignedUserId')?.touched) {
+          <mat-error>Assigned user is required.</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Status and Source Row -->
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Lead Status *</mat-label>
+          <mat-select formControlName="status" required>
+            @for (st of statuses; track st) {
+              <mat-option [value]="st">{{ st }}</mat-option>
+            }
+          </mat-select>
+          <mat-icon matPrefix>flag</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Lead Source *</mat-label>
+          <input
+            matInput
+            formControlName="source"
+            placeholder="e.g. Website, Referral, Phone"
+            required
+          />
+          <mat-icon matPrefix>travel_explore</mat-icon>
+          @if (form.get('source')?.hasError('required') && form.get('source')?.touched) {
+            <mat-error>Lead source is required.</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <!-- Quick source suggestion chips -->
+      <div class="source-suggestions">
+        <span class="suggestions-label">Suggestions:</span>
+        @for (src of commonSources; track src) {
+          <button
+            type="button"
+            class="chip-btn"
+            [class.chip-active]="form.get('source')?.value === src"
+            (click)="setSource(src)"
+          >
+            {{ src }}
+          </button>
+        }
+      </div>
+
+      <!-- Notes Field -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Notes (Optional)</mat-label>
+        <textarea
+          matInput
+          formControlName="notes"
+          rows="3"
+          placeholder="Details on interest, requirements, budget, etc."
+        ></textarea>
+        <mat-icon matPrefix>notes</mat-icon>
+      </mat-form-field>
+
+      @if (data.mode === 'create') {
+        <div class="reminder-notice">
+          <mat-icon>alarm_on</mat-icon>
+          <span>
+            <strong>Automatic Reminder:</strong> A follow-up reminder with status
+            <code>PENDING</code> will be automatically scheduled and assigned to the selected user.
+          </span>
+        </div>
+      }
+    </form>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-button type="button" (click)="onCancel()" [disabled]="isSaving()">
+    Cancel
+  </button>
+  <button
+    mat-raised-button
+    color="primary"
+    type="button"
+    (click)="onSubmit()"
+    [disabled]="isSaving() || loadingData()"
+  >
+    @if (isSaving()) {
+      <mat-spinner diameter="18" class="btn-spinner"></mat-spinner>
+    }
+    {{ submitButtonLabel }}
+  </button>
+</mat-dialog-actions>
+

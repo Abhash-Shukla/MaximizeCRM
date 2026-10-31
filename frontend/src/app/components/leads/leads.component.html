@@ -1,0 +1,211 @@
+<div class="leads-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-titles">
+      <div class="breadcrumb">
+        <a routerLink="/dashboard" class="back-link">
+          <mat-icon>arrow_back</mat-icon>
+          <span>Dashboard</span>
+        </a>
+      </div>
+      <h1 class="page-title">Leads Pipeline</h1>
+      <p class="page-subtitle">Track prospects, manage statuses, and assign follow-up responsibilities.</p>
+    </div>
+
+    <div class="header-actions">
+      <button mat-raised-button color="primary" class="add-btn" (click)="openCreateDialog()">
+        <mat-icon>add_business</mat-icon>
+        Add Lead
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter & Search Toolbar -->
+  <mat-card class="filter-card">
+    <div class="filter-row">
+      <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+        <mat-label>Search leads</mat-label>
+        <input
+          matInput
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onFilterChange()"
+          placeholder="Search by contact, company, source, notes..."
+        />
+        <mat-icon matPrefix>search</mat-icon>
+        @if (searchTerm) {
+          <button mat-icon-button matSuffix (click)="searchTerm = ''; onFilterChange()" title="Clear search">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="status-field" subscriptSizing="dynamic">
+        <mat-label>Status</mat-label>
+        <mat-select [(ngModel)]="selectedStatus" (ngModelChange)="onFilterChange()">
+          <mat-option value="">All Statuses</mat-option>
+          <mat-option value="NEW">NEW</mat-option>
+          <mat-option value="CONTACTED">CONTACTED</mat-option>
+          <mat-option value="QUALIFIED">QUALIFIED</mat-option>
+          <mat-option value="LOST">LOST</mat-option>
+        </mat-select>
+        <mat-icon matPrefix>filter_list</mat-icon>
+      </mat-form-field>
+
+      @if (searchTerm || selectedStatus) {
+        <button mat-stroked-button (click)="clearFilters()" class="clear-btn">
+          <mat-icon>filter_alt_off</mat-icon>
+          Reset Filters
+        </button>
+      }
+
+      <button mat-icon-button (click)="loadLeads()" title="Refresh" class="refresh-btn">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </mat-card>
+
+  <!-- Error Alert -->
+  @if (error(); as err) {
+    <div class="alert alert-error">
+      <mat-icon>error</mat-icon>
+      <span>{{ err }}</span>
+      <button mat-button color="warn" (click)="loadLeads()">Retry</button>
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <span>Loading leads pipeline...</span>
+    </div>
+  } @else {
+    <!-- Table Card -->
+    <mat-card class="table-card">
+      @if (leads().length === 0) {
+        <div class="empty-state">
+          <mat-icon class="empty-icon">filter_alt</mat-icon>
+          <h3>No leads found</h3>
+          @if (searchTerm || selectedStatus) {
+            <p>No leads match your current search criteria. Try resetting the filters.</p>
+            <button mat-stroked-button (click)="clearFilters()">Reset Filters</button>
+          } @else {
+            <p>Your pipeline is currently empty. Convert contacts into sales leads by creating one.</p>
+            <button mat-raised-button color="primary" (click)="openCreateDialog()">
+              <mat-icon>add_business</mat-icon>
+              Add First Lead
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table mat-table [dataSource]="leads()" class="leads-table">
+            <!-- Contact Column -->
+            <ng-container matColumnDef="contact">
+              <th mat-header-cell *matHeaderCellDef>Linked Contact</th>
+              <td mat-cell *matCellDef="let lead">
+                <div class="contact-cell">
+                  <mat-icon class="avatar-icon">person</mat-icon>
+                  <div>
+                    <div class="contact-name">{{ lead.contactName }}</div>
+                    @if (lead.contactCompany) {
+                      <div class="contact-company">{{ lead.contactCompany }}</div>
+                    }
+                    @if (lead.notes) {
+                      <div class="notes-preview" [matTooltip]="lead.notes">{{ lead.notes }}</div>
+                    }
+                  </div>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Source Column -->
+            <ng-container matColumnDef="source">
+              <th mat-header-cell *matHeaderCellDef>Source</th>
+              <td mat-cell *matCellDef="let lead">
+                <span class="source-badge">
+                  <mat-icon class="source-icon">travel_explore</mat-icon>
+                  {{ lead.source }}
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- Status Column -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <td mat-cell *matCellDef="let lead">
+                <span class="status-badge status-{{ lead.status | lowercase }}">
+                  {{ lead.status }}
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- Assigned User Column -->
+            <ng-container matColumnDef="assignedUser">
+              <th mat-header-cell *matHeaderCellDef>Assigned Rep</th>
+              <td mat-cell *matCellDef="let lead">
+                <div class="user-cell">
+                  <mat-icon class="rep-icon">assignment_ind</mat-icon>
+                  <div>
+                    <div class="user-name">{{ lead.assignedUserName }}</div>
+                    <div class="user-email">{{ lead.assignedUserEmail }}</div>
+                  </div>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Reminder Column -->
+            <ng-container matColumnDef="reminder">
+              <th mat-header-cell *matHeaderCellDef>Follow-up Reminder</th>
+              <td mat-cell *matCellDef="let lead">
+                @if (lead.reminderId) {
+                  <span class="reminder-badge" title="Automated Reminder #{{ lead.reminderId }}">
+                    <mat-icon>alarm</mat-icon>
+                    <span>{{ lead.reminderStatus || 'PENDING' }}</span>
+                  </span>
+                } @else {
+                  <span class="text-muted">—</span>
+                }
+              </td>
+            </ng-container>
+
+            <!-- Created Date Column -->
+            <ng-container matColumnDef="createdAt">
+              <th mat-header-cell *matHeaderCellDef>Created</th>
+              <td mat-cell *matCellDef="let lead" class="date-cell">
+                {{ lead.createdAt ? (lead.createdAt | date: 'mediumDate') : '—' }}
+              </td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef class="actions-header">Actions</th>
+              <td mat-cell *matCellDef="let lead" class="actions-cell">
+                <button
+                  mat-icon-button
+                  color="primary"
+                  (click)="openEditDialog(lead)"
+                  matTooltip="Edit Lead"
+                >
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  color="warn"
+                  (click)="deleteLead(lead)"
+                  matTooltip="Delete Lead"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns" class="table-row"></tr>
+          </table>
+        </div>
+      }
+    </mat-card>
+  }
+</div>
+

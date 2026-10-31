@@ -1,19 +1,25 @@
 package com.maximizecrm.service;
 
+import com.maximizecrm.repository.LeadRepository;
 import org.springframework.stereotype.Component;
 
 /**
- * Validates lead associations for contacts.
- * Leads module is not yet implemented. When the Leads module is added,
- * this component can be updated to query the lead repository.
+ * Validates lead associations for contacts using LeadRepository.
  */
 @Component
 public class DefaultLeadValidator implements LeadValidator {
 
+    private final LeadRepository leadRepository;
+
+    public DefaultLeadValidator(LeadRepository leadRepository) {
+        this.leadRepository = leadRepository;
+    }
+
     @Override
     public boolean hasAssociatedLeads(Long contactId) {
-        // No leads exist yet in the system.
-        return false;
+        if (contactId == null) {
+            return false;
+        }
+        return leadRepository.existsByContactId(contactId);
     }
 }
-

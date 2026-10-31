@@ -49,18 +49,24 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
         )
         .exceptionHandling(ex -> ex
             .authenticationEntryPoint((request, response, authException) -> {
-                response.setContentType("application/json");
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write(
-                    "{\"status\":401,\"message\":\"Unauthorized: Authentication token is missing or invalid\"}"
-                );
+                if (!response.isCommitted()) {
+                    response.setContentType("application/json");
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write(
+                        "{\"status\":401,\"message\":\"Unauthorized: Authentication token is missing or invalid\"}"
+                    );
+                }
             })
         )
         .authorizeHttpRequests(auth -> auth
+            .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR, jakarta.servlet.DispatcherType.FORWARD).permitAll()
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .requestMatchers("/api/health").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-            .requestMatchers("/api/contacts/**").hasAnyRole("ADMIN", "SALES_REP")
+            .requestMatchers("/error").permitAll()
+            .requestMatchers("/api/contacts", "/api/contacts/**").hasAnyRole("ADMIN", "SALES_REP")
+            .requestMatchers("/api/leads", "/api/leads/**").hasAnyRole("ADMIN", "SALES_REP")
+            .requestMatchers("/api/users", "/api/users/**").hasAnyRole("ADMIN", "SALES_REP")
             .anyRequest().authenticated()
         )
         .addFilterBefore(

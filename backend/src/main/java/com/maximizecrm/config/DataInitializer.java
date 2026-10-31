@@ -50,6 +50,22 @@ public class DataInitializer implements CommandLineRunner {
         } else {
             log.info("[DEV SEED] Development admin account already exists: {}", adminEmail);
         }
+
+        final String repEmail = "rep@maximizecrm.local";
+        if (!userRepository.existsByEmailIgnoreCase(repEmail)) {
+            User rep = new User();
+            rep.setFullName("Sarah Connor");
+            rep.setEmail(repEmail);
+            rep.setPasswordHash(passwordEncoder.encode("Rep@123"));
+            rep.setRole(Role.SALES_REP);
+            rep.setActive(true);
+
+            userRepository.save(rep);
+            log.info("=================================================================");
+            log.info("[DEV SEED] Initialized development sales rep account: {}", repEmail);
+            log.info("[DEV SEED] Password: Rep@123 (CHANGE IN PRODUCTION)");
+            log.info("=================================================================");
+        }
     }
 }
 
